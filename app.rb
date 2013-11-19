@@ -102,6 +102,7 @@ class App < Sinatra::Base
 		if data.nil?
 			redirect '/404'
 		else
+			data['html'] = data['html'].gsub("<script", "script").gsub("<iframe", "iframe")
 			erb :edit, locals: {data: data}
 		end
 	end

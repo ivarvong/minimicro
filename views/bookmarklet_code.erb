@@ -3,7 +3,10 @@ setTimeout(function() {	// this is horrible
 	if (window.location.host.indexOf("dailyemerald.com") >= 0) {
 		html = jQuery('#primary').html();
 	} else if (window.location.host.indexOf("seattletimes.com") >= 0) {
-		html = "hello";
+		var tmp = jQuery('#leftcolumn');
+		tmp.find('.addthis-vertical-layout').remove();
+		tmp.find('.co_inthenews').remove();
+		html = tmp.html();
 	} else {
 		html = jQuery('body').html();
 	}
@@ -12,5 +15,7 @@ setTimeout(function() {	// this is horrible
 		'html': html
 	}).success(function(url) {
 		window.location = url;
+	}).error(function(data) {
+		alert("error! "+data);
 	});	
 }, 100);

@@ -1,9 +1,23 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script> 
 <style>
 	.left, .right {
 		width: 50%;
+		overflow: hidden;
 		margin: 0;
 		padding: 0;
-		float: left;
+	}
+	.left {
+		padding: 20px;
+		font-size: 20px;
+		line-height: 1.4em;
+	}
+	.right {
+		position: fixed;
+		top: 10px;
+		left: 50%;
+		width: 50%;
+		height: 80%;
+		min-height: 500px;
 	}
 	.micromicro {
 		padding-left: 10px;
@@ -11,11 +25,26 @@
 		border-left: 2px solid #CCC;
 	}
 </style>
+
+<script>
+
+$(document).ready(function() {
+	$('.left').on('mouseup', function() {	
+		var selection = window.getSelection();
+		var start_idx = Math.min(selection.baseOffset, selection.extentOffset); // if the text is selected right to left, we need to flip the indexes for the .slice
+		var end_idx   = Math.max(selection.baseOffset, selection.extentOffset);
+		var selected_text = selection.baseNode.nodeValue.slice(start_idx, end_idx);
+		console.log(selection);
+		$('.micromicro').html( selection.baseNode.data );
+		$('.micromicro').append("<h3>"+selected_text+"</h3>");
+	});	
+});
+</script>
 <div class="left">
 	<%= data['html'] %>
 </div>
 <div class="right">
 	<div class="micromicro">
-
+		<h3>select some text!</h3>
 	</div>
 </div>
