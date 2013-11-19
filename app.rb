@@ -91,6 +91,12 @@ class App < Sinatra::Base
 		return "#{ENV['HOST']}/edit/#{md5}"
 	end
 
+	post '/api/v1/update_page' do
+		REDIS.with{ |redis|
+        	redis.hset(params['id'], 'html', params['html'])
+        }
+    end
+
 	get '/favicon.ico' do
 		nil
 	end
@@ -103,7 +109,7 @@ class App < Sinatra::Base
 			redirect '/404'
 		else
 			data['html'] = data['html'].gsub("<script", "script").gsub("<iframe", "iframe")
-			erb :edit, locals: {data: data}
+			erb :edit, locals: {id: params['id'], data: data, update_endpoint: '/api/v1/update_page', host: ENV['HOST']}
 		end
 	end
 

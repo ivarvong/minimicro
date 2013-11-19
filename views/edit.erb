@@ -17,27 +17,70 @@
 		left: 50%;
 		width: 50%;
 		height: 80%;
-		min-height: 500px;
+		min-height: 500px;		
+	}
+	.microdata {
+		padding: 40px;
+		font-size: 30px;
 	}
 	.micromicro {
 		padding-left: 10px;
 		margin-left: 10px;
 		border-left: 2px solid #CCC;
 	}
+	.tagged {
+		display: inline-block;
+		background: #659CEF;
+	}
 </style>
 
 <script>
 
+var update_html = function(html) {
+	$.post("<%= host %><%= update_endpoint %>", {
+		id: "<%= id %>",
+		html: html
+	}).success(function() {
+		console.log('saved')
+	}).error(function() {
+		console.log('failed')
+	});
+}
+
 $(document).ready(function() {
+
+	$('.left').on('mouseenter', '.tagged', function(){		
+		$('.microdata').html($(this).attr('data-tag'));
+	});
+	$('.left').on('mouseleave', '.tagged', function(){		
+		$('.microdata').html('');
+	});
+
 	$('.left').on('mouseup', function() {	
 		var selection = window.getSelection();
 		var start_idx = Math.min(selection.baseOffset, selection.extentOffset); // if the text is selected right to left, we need to flip the indexes for the .slice
 		var end_idx   = Math.max(selection.baseOffset, selection.extentOffset);
-		var selected_text = selection.baseNode.nodeValue.slice(start_idx, end_idx);
-		console.log(selection);
+		//var selected_text = selection.baseNode.nodeValue.slice(start_idx, end_idx);
+		
+		var $el = $(selection.focusNode.parentElement);
+		var old_el = $el.text();
+		var selected_text = $el.text().slice(start_idx, end_idx);
+
 		$('.micromicro').html( selection.baseNode.data );
 		$('.micromicro').append("<h3>"+selected_text+"</h3>");
+
+
+
+		var tag = prompt("tag:");
+
+		var new_html = old_el.substring(0, start_idx) + "<span class='tagged' data-tag='"+tag+"'>" + old_el.substring(start_idx, end_idx) + "</span>" + old_el.substring(end_idx, old_el.length);
+
+		$el.html(new_html);
+
+		update_html($('.left').html());
+
 	});	
+
 });
 </script>
 <div class="left">
@@ -46,5 +89,7 @@ $(document).ready(function() {
 <div class="right">
 	<div class="micromicro">
 		<h3>select some text!</h3>
+	</div>
+	<div class="microdata">
 	</div>
 </div>
