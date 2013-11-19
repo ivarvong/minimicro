@@ -9,6 +9,8 @@ require 'digest/md5'
 require 'connection_pool'
 require 'csv'
 require 'json'
+require 'open_calais'
+require 'nokogiri'
 require 'dotenv'
 Dotenv.load
 
@@ -41,7 +43,9 @@ class App < Sinatra::Base
  	configure do
 		set :server, 'thin'
 		set :sockets, []
-				
+		
+		set :calais, OpenCalais::Client.new(api_key: ENV['CALAIS_KEY'])
+
 		set :webhook_pool,  Celluloid::Actor[:webhook_pool]  = WebhookJob.pool(size: 2)
 
 		set :redis_subscriber, Thread.new {			
@@ -111,6 +115,18 @@ class App < Sinatra::Base
 			data['html'] = data['html'].gsub("<script", "script").gsub("<iframe", "iframe")
 			erb :edit, locals: {id: params['id'], data: data, update_endpoint: '/api/v1/update_page', host: ENV['HOST']}
 		end
+	end
+
+	get '/calais/:id' do
+		html = REDIS.with{ |redis| 
+			redis.hget(params['id'], 'html') 
+		}
+		doc = Nokogiri::HTML(html)
+		text = doc.inner_text()
+		response = settings.calais.enrich(text)
+		puts response.raw.inspect
+		puts response.raw.try(:keys)
+		{tags: response.tags, entities: response.entities}.to_json
 	end
 
 	get '/404' do

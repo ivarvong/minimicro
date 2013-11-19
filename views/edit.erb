@@ -69,8 +69,6 @@ $(document).ready(function() {
 		$('.micromicro').html( selection.baseNode.data );
 		$('.micromicro').append("<h3>"+selected_text+"</h3>");
 
-
-
 		var tag = prompt("tag:");
 
 		var new_html = old_el.substring(0, start_idx) + "<span class='tagged' data-tag='"+tag+"'>" + old_el.substring(start_idx, end_idx) + "</span>" + old_el.substring(end_idx, old_el.length);
@@ -83,9 +81,13 @@ $(document).ready(function() {
 
 });
 </script>
+
+<a href="/calais/<%= id %>">run in calais</a><br>
+
 <div class="left">
 	<%= data['html'] %>
 </div>
+
 <div class="right">
 	<div class="micromicro">
 		<h3>select some text!</h3>
