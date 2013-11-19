@@ -9,6 +9,8 @@ require 'digest/md5'
 require 'connection_pool'
 require 'csv'
 require 'json'
+require 'dotenv'
+Dotenv.load
 
 REDIS = ConnectionPool.new(size: 5, timeout: 5) do
 	puts "creating global redis pool..."
@@ -64,12 +66,12 @@ class App < Sinatra::Base
 	end
 
 	get '/' do		
-		erb :index
+		erb :index, locals: { host: ENV['HOST'] }
 	end
 
-	get '/bookmarklet/app.js' do
+	get '/bookmarklet/app/:throwaway' do
 		content_type 'text/javascript'
-		erb :bookmarklet_code
+		erb :bookmarklet_code, locals: { host: ENV['HOST'], endpoint: '/api/v1/page' }
 	end
 
 	get '/bookmarklet/app.css' do
@@ -78,11 +80,35 @@ class App < Sinatra::Base
 	end
 
 	post '/api/v1/page' do
-		
+		headers['Access-Control-Allow-Origin'] = '*'
+        headers["Access-Control-Allow-Methods"] = 'POST'                
+       
+        md5 = Digest::MD5.hexdigest(params['html']) 
+
+        REDIS.with{ |redis|
+        	redis.hmset(md5, 'url', params['url'], 'html', params['html'], 'original', params['html'])
+        }
+		return "#{ENV['HOST']}/edit/#{md5}"
 	end
 
 	get '/favicon.ico' do
 		nil
+	end
+
+	get '/edit/:id' do
+		data = REDIS.with{ |redis| 
+			redis.hgetall(params['id']) 
+		}
+		if data.nil?
+			redirect '/404'
+		else
+			erb :edit, locals: {data: data}
+		end
+	end
+
+	get '/404' do
+		status_code 404
+		"couldn't find that. sorry."
 	end
 
 	get '/redis-status' do

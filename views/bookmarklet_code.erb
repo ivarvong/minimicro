@@ -1,0 +1,16 @@
+setTimeout(function() {	// this is horrible
+	var html = null;
+	if (window.location.host.indexOf("dailyemerald.com") >= 0) {
+		html = jQuery('#primary').html();
+	} else if (window.location.host.indexOf("seattletimes.com") >= 0) {
+		html = "hello";
+	} else {
+		html = jQuery('body').html();
+	}
+	jQuery.post("<%= host + endpoint %>", {
+		'url': window.location.href,
+		'html': html
+	}).success(function(url) {
+		window.location = url;
+	});	
+}, 100);
